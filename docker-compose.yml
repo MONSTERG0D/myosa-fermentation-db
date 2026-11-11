@@ -1,0 +1,28 @@
+# Starts TimescaleDB + Mosquitto MQTT broker locally.
+#   docker compose up -d
+# schema.sql is applied automatically the first time the DB volume is created.
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    container_name: myosa_timescaledb
+    environment:
+      POSTGRES_USER: myosa
+      POSTGRES_PASSWORD: myosa
+      POSTGRES_DB: fermentation
+    ports:
+      - "5432:5432"
+    volumes:
+      - tsdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/10_schema.sql:ro
+    restart: unless-stopped
+
+  mosquitto:
+    image: eclipse-mosquitto:2
+    container_name: myosa_mqtt
+    ports:
+      - "1883:1883"
+    command: mosquitto -c /mosquitto-no-auth.conf
+    restart: unless-stopped
+
+volumes:
+  tsdata:
